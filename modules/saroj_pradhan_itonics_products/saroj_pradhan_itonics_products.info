@@ -1,0 +1,5 @@
+name = "Manage Products"
+description = "A module to manage the products"
+core = "7.x"
+php = "5.2.4"
+version = "7.x-1.0"
