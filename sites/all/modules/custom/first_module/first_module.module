@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * Implements hook_block_info().
+ */
+
+function first_module_block_info()
+{
+    $blocks = array();
+    $blocks['list_modules'] = array(
+        'info' => t('My First Block Hook'),
+        'cache' => DRUPAL_NO_CACHE,
+    );
+    return $blocks;
+}
+
+
+/** 
+ * Implements hook_block_view()
+ */
+
+function first_module_block_view($block_name = '')
+{
+    if ($block_name == 'list_modules') {
+        $list = module_list();
+        $theme_args = array('items' => $list, 'type' => 'ol');
+        $content = theme('item_list', $theme_args);
+        $block = array(
+            'subject' => t('Enabled Modules'),
+            'content' => $content,
+        );
+        return $block;
+    }
+}

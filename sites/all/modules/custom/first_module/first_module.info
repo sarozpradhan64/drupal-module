@@ -1,0 +1,4 @@
+name = First Simple module
+description = A simple module for the drupal
+package = Custom Module
+core = 7.x
