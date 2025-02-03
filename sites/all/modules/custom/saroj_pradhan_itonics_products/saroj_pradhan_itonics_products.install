@@ -1,85 +1,97 @@
 <?php
 
-
 /**
- * Implements hook_schema()
+ * Implements hook_schema().
  */
-
 function saroj_pradhan_itonics_products_schema()
 {
     $schema['saroj_pradhan_itonics_products'] = array(
         'description' => 'Schema for products table',
         'fields' => array(
             'id' => array(
-                'description' => 'Primary Key',
                 'type' => 'serial',
-                'unsigned' => TRUE,
+                'not null' => TRUE,
+                'unsigned' => TRUE
             ),
             'title' => array(
                 'type' => 'varchar',
                 'length' => 255,
-                'not null' => TRUE
+                'not null' => TRUE,
             ),
             'image_id' => array(
                 'description' => 'File id for the product image',
                 'type' => 'int',
-                'unsigned' => TRUE,
-                'not null' => FALSE
+                'not null' => FALSE,
             ),
             'summary' => array(
                 'type' => 'text',
                 'size' => 'big',
-                'not null' => FALSE
+                'not null' => FALSE,
             ),
             'description' => array(
                 'type' => 'text',
                 'size' => 'big',
-                'not null' => FALSE
+                'not null' => FALSE,
             ),
             'category' => array(
                 'description' => 'Multi Select',
                 'type' => 'varchar',
-                'size' => 255,
-                'not null' => TRUE
+                'length' => 255,
+                'not null' => TRUE,
             ),
             'type' => array(
                 'description' => 'Single Select',
                 'type' => 'varchar',
                 'length' => 64,
-                'nut null' => TRUE
+                'not null' => TRUE,
             ),
             'owner_email' => array(
                 'type' => 'varchar',
                 'length' => 255,
-                'not null' => TRUE
+                'not null' => TRUE,
             ),
             'expiry_date' => array(
                 'type' => 'int',
-                'not null' => TRUE
+                'not null' => TRUE,
             ),
             'created_at' => array(
                 'type' => 'int',
-                'not null' => FALSE
-
+                'not null' => FALSE,
             ),
             'updated_at' => array(
                 'type' => 'int',
-                'not null' => FALSE
-            )
+                'not null' => FALSE,
+            ),
         ),
-
-        'primary key' => array('id')
+        'primary key' => array('id'),
     );
+
+    return $schema;
 }
 
+/**
+ * Implements hook_install().
+ */
+function saroj_pradhan_itonics_products_install()
+{
+    $tables = db_find_tables('%');
+    if (!in_array('saroj_pradhan_itonics_products', $tables)) {
+        drupal_install_schema('saroj_pradhan_itonics_products');
+    }
+
+
+    // Create a directory for product images if it doesn't exist.
+    $directory = 'public://product_images';
+    if (!file_exists($directory)) {
+        file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
+    }
+}
 
 /**
- * Implements Hook install()
+ * Implements hook_uninstall().
  */
-
-function saroj_pradhan_itonics_products()
+function saroj_pradhan_itonics_products_uninstall()
 {
-    //directory for product images
-    $directory = 'public://product_images';
-    file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
+
+    drupal_uninstall_schema('saroj_pradhan_itonics_products');
 }

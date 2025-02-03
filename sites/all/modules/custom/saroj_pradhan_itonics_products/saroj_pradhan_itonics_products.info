@@ -1,4 +1,4 @@
-name = "Manage Products"
+name = "Saroj Itonics Products"
 description = "A module to manage the products"
 package = "Custom Module"
 core = "7.x"
