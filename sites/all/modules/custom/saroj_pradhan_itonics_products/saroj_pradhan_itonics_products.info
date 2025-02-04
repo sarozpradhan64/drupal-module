@@ -5,8 +5,3 @@ core = "7.x"
 php = "7.4"
 version = "7.x-1.0"
 dependencies[]="image"
-
-stylesheets[all][] = css/style.css
-stylesheets[all][] = css/multi-select.css
-scripts[] = js/multi-select.js
-scripts[] = js/multi-select-init.js
