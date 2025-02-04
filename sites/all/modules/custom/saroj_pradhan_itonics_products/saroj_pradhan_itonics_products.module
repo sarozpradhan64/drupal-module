@@ -1,6 +1,35 @@
 <?php
 
 
+/**
+ * Implements hook_permission().
+ */
+function saroj_pradhan_itonics_products_permission()
+{
+  return array(
+
+    'list itonics products' => array(
+      'title' => t('List ITONICS products')
+    ),
+    'create itonics products' => array(
+      'title' => t('Create ITONICS products')
+    ),
+    'view itonics products' => array(
+      'title' => t('View ITONICS products'),
+    ),
+    'edit itonics products' => array(
+      'title' => t('Edit ITONICS products'),
+    ),
+    'delete itonics products' => array(
+      'title' => t('Delete ITONICS products'),
+    ),
+  );
+}
+
+/**
+ * 
+ * hook menu
+ */
 function saroj_pradhan_itonics_products_menu()
 {
   $items = array();
@@ -10,25 +39,32 @@ function saroj_pradhan_itonics_products_menu()
     'title' => 'ITONICS Products',
     'description' => 'Manage ITONICS products',
     'page callback' => 'saroj_pradhan_itonics_products_list',
-    'access arguments' => array('administer itonics products'),
+    'access arguments' => array('list itonics products'),
     'type' => MENU_NORMAL_ITEM,
-    'menu_name' => 'management',
   );
 
   $items['admin/content/itonics-products/add'] = array(
     'title' => 'Add Product',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('saroj_pradhan_itonics_products_form'),
-    'access arguments' => array('administer itonics products'),
+    'access arguments' => array('create itonics products'),
     'type' => MENU_LOCAL_ACTION,
+  );
+
+  $items['admin/content/itonics-products/%/show'] = array(
+    'title' => 'Show Product',
+    'page callback' => 'saroj_pradhan_itonics_products_show',
+    // The 3 --> third argument from the URL.
+    'page arguments' => array(3),
+    'access arguments' => array('view itonics products'),
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/content/itonics-products/%/edit'] = array(
     'title' => 'Edit Product',
     'page callback' => 'drupal_get_form',
-    // The 3 --> third argument from the URL.
     'page arguments' => array('saroj_pradhan_itonics_products_form', 3),
-    'access arguments' => array('administer itonics products'),
+    'access arguments' => array('edit itonics products'),
     'type' => MENU_CALLBACK,
   );
 
@@ -36,7 +72,7 @@ function saroj_pradhan_itonics_products_menu()
     'title' => 'Delete Product',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('saroj_pradhan_itonics_products_delete_form', 3),
-    'access arguments' => array('administer itonics products'),
+    'access arguments' => array('delete itonics products'),
     'type' => MENU_CALLBACK,
   );
 
@@ -60,10 +96,19 @@ function saroj_pradhan_itonics_products_init()
   drupal_add_library('system', 'ui.datepicker');
 
 
-  // if (path_is_admin('admin/content/itonics-products/*')) {
-  //   drupal_add_js(drupal_get_path('module', 'saroj_pradhan_itonics_products') . '/js/script.js');
-  // }
+  if (path_is_admin('admin/content/itonics-products/*')) {
+    drupal_add_css(drupal_get_path('module', 'saroj_pradhan_itonics_products') . '/css/style.css');
+    drupal_add_js(drupal_get_path('module', 'saroj_pradhan_itonics_products') . '/js/multi-select-init.js');
+    drupal_add_js(drupal_get_path('module', 'saroj_pradhan_itonics_products') . '/js/multi-select.js');
+    // drupal_add_js('sites/all/libraries/jquery-multiselect/js/jquery.multiselect.js');
+    // drupal_add_js('sites/all/libraries/jquery-multiselect/js/jquery.multiselect.js');
+    // drupal_add_css('sites/all/libraries/jquery-multiselect/css/jquery.multiselect.css');
+    //   drupal_add_js(drupal_get_path('module', 'saroj_pradhan_itonics_products') . '/js/script.js');
+  }
 }
+
+
+
 
 
 /**
@@ -73,12 +118,12 @@ function saroj_pradhan_itonics_products_list()
 {
   $header = array(
     array('data' => t('ID'), 'field' => 'id'),
-    array('data' => t('Image'), 'field' => 'image_id'),
+    array('data' => t('Image'), 'field' => 'image_fid'),
     array('data' => t('Title'), 'field' => 'title'),
     array('data' => t('Type'), 'field' => 'type'),
     array('data' => t('Owner Email'), 'field' => 'owner_email'),
     array('data' => t('Expiry Date'), 'field' => 'expiry_date'),
-    array('data' => t('Operations'), 'colspan' => 2),
+    array('data' => t('Operations')),
   );
 
   // Create a sortable table query
@@ -86,10 +131,10 @@ function saroj_pradhan_itonics_products_list()
     ->extend('PagerDefault')
     ->extend('TableSort');
 
-  $query->fields('p', array('id', 'image_id', 'title', 'type', 'owner_email', 'expiry_date'));
+  $query->fields('p', array('id', 'image_fid', 'title', 'type', 'owner_email', 'expiry_date'));
 
   $result = $query
-    ->limit(20)
+    ->limit(10)
     ->orderByHeader($header)
     ->execute();
 
@@ -97,8 +142,8 @@ function saroj_pradhan_itonics_products_list()
   foreach ($result as $product) {
 
     $image = '';
-    if ($product->image_id) {
-      $file = file_load($product->image_id);
+    if ($product->image_fid) {
+      $file = file_load($product->image_fid);
       if ($file) {
         $image = theme('image_style', array(
           'style_name' => 'thumbnail',
@@ -117,8 +162,11 @@ function saroj_pradhan_itonics_products_list()
       $product->type,
       $product->owner_email,
       date('Y-m-d', $product->expiry_date),
-      l(t('Edit'), "admin/content/itonics-products/$product->id/edit"),
-      l(t('Delete'), "admin/content/itonics-products/$product->id/delete"),
+      implode(" | ", array_filter([
+        user_access('view itonics products') ?  l(t('View'), "admin/content/itonics-products/$product->id/show") : null,
+        user_access('edit itonics products') ? l(t('Edit'), "admin/content/itonics-products/$product->id/edit") : null,
+        user_access('delete itonics products') ? l(t('Delete'), "admin/content/itonics-products/$product->id/delete") : null,
+      ]))
     );
   }
 
@@ -163,14 +211,17 @@ function saroj_pradhan_itonics_products_form($form, &$form_state, $product_id = 
 
 
   $form['image'] = array(
-    '#type' => 'file',
+    '#type' => 'managed_file',
     '#title' => t('Image'),
-    '#upload_location' => 'public://product_images/',
+    '#upload_location' => 'public://itonics_products/',
     '#description' => t('Choose Product Image.'),
+    '#upload_validators' => array(
+      'file_validate_extensions' => array('png gif jpg jpeg'),
+    ),
   );
 
-  if (isset($product) && $product->image_id) {
-    $file = file_load($product->image_id);
+  if (isset($product) && $product->image_fid) {
+    $file = file_load($product->image_fid);
     if ($file) {
       $form['current_image'] = array(
         '#markup' => theme('image_style', array(
@@ -273,15 +324,6 @@ function saroj_pradhan_itonics_products_form_validate($form, &$form_state)
     form_set_error('owner_email', t('Invalid Owner Email'));
   }
 
-  // Image  validation
-  // $file = file_save_upload('image', array(
-  //   'file_validate_is_image' => array(),
-  //   'file_validate_extensions' => array('png gif jpg jpeg'),
-  // ));
-
-  // if ($file) {
-  //   $form_state['values']['image'] = $file;
-  // }
 
   // Expiry date validation
   // $expiry_date = $form_state['values']['expiry_date'];
@@ -313,31 +355,78 @@ function saroj_pradhan_itonics_products_form_submit($form, &$form_state)
   $product->expiry_date = strtotime($values['expiry_date']['year'] . "-" . $values['expiry_date']['month'] . "-" . $values['expiry_date']['day']);
 
   // Handle image upload
-  // if ($values['image']) {
-  // $file = $values['image']; // Load the file entity
+  if (isset($values['image'])) {
+    $file = file_load($values['image']);
+    $file->status = FILE_STATUS_PERMANENT;
+    file_save($file);
+    $product->image_fid = $file->fid;
+    // file_usage_add($file, 'saroj_pradhan_itonics_products', 'product', $result);
+  }
 
-  // // if ($file) {
-  // // $file = file_save_upload($file->uri, $validators, 'public://product_image/' .  $file->filename, FILE_EXISTS_REPLACE);
-  // $file->status = FILE_STATUS_PERMANENT;
-  // $file_saved = file_save($file);
-
-  // // variable_set('image_id', $file_saved->fid);
-  // $product->image_id = $file_saved->fid;
-  // // }
-  // // }
-
+  // update product 
   if ($product_id) {
-    // update product 
     $product->id = $product_id;
     drupal_write_record('saroj_pradhan_itonics_products', $product, 'id');
     drupal_set_message(t('Product updated successfully'));
   } else {
     // craete product
-    drupal_write_record('saroj_pradhan_itonics_products', $product);
+    $new_product =   drupal_write_record('saroj_pradhan_itonics_products', $product);
     drupal_set_message(t('Product added successfully'));
   }
 
   $form_state['redirect'] = '/admin/content/itonics-products';
+}
+
+
+/**
+ * Show Product 
+ */
+function saroj_pradhan_itonics_products_show($product_id)
+{
+  $product = db_select('saroj_pradhan_itonics_products', 'p')
+    ->fields('p')
+    ->condition('id', $product_id)
+    ->execute()
+    ->fetchObject();
+
+  if (!$product) {
+    drupal_not_found();
+    return;
+  }
+
+
+  // image
+  if ($product->image_fid) {
+    $file = file_load($product->image_fid);
+    if ($file) {
+      $image = theme('image_style', array(
+        'style_name' => 'product_image',
+        'path' => $file->uri,
+        'width' => 250,
+        'height' => 250,
+        'alt' => $product->title,
+      ));
+    }
+  }
+  // format the expiry date 
+  $expiry_date_formatted = $product->expiry_date ?  date('Y-m-d', $product->expiry_date) : "";
+
+  $body = array();
+  $body = '<div class="product-view">';
+
+  $body .= '<h2>' . check_plain($product->title) . '</h2>';
+  $body .= '<p><strong>Category:</strong> ' . implode(', ', unserialize($product->category)) . '</p>';
+  $body .= '<p><strong>Owner Email:</strong> ' . check_plain($product->owner_email) . '</p>';
+  $body .= '<p><strong>Type:</strong> ' . check_plain($product->type) . '</p>';
+  $body .= '<p><strong>Expiry Date:</strong> ' . check_plain($expiry_date_formatted) . '</p>';
+  if (isset($image)) {  
+    $body .= '<div>' . $image . '</div>';
+  }
+  $body .= '<p><strong>Summary:</strong> ' . check_plain($product->summary) . '</p>';
+  $body .= '<p><strong>Description:</strong> ' . check_markup($product->description, 'filtered_html') . '</p>';
+  $body .= '</div>';
+
+  return $body;
 }
 
 
@@ -375,8 +464,8 @@ function saroj_pradhan_itonics_products_delete_form_submit($form, &$form_state)
 
     if ($product) {
       // Delete associated image
-      if ($product->image_id) {
-        $file = file_load($product->image_id);
+      if ($product->image_fid) {
+        $file = file_load($product->image_fid);
         if ($file) {
           file_usage_delete($file, 'saroj_pradhan_itonics_products');
           file_delete($file);

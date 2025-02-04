@@ -18,7 +18,7 @@ function saroj_pradhan_itonics_products_schema()
                 'length' => 255,
                 'not null' => TRUE,
             ),
-            'image_id' => array(
+            'image_fid' => array(
                 'description' => 'File id for the product image',
                 'type' => 'int',
                 'not null' => FALSE,
@@ -84,6 +84,26 @@ function saroj_pradhan_itonics_products_install()
     $directory = 'public://product_images';
     if (!file_exists($directory)) {
         file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
+    }
+
+    $style_name = 'product_image';
+
+    // Check if the image style already exists.
+    if (!image_style_load($style_name)) {
+        $style = array(
+            'name' => $style_name,
+            'label' => 'Product Detail View Image',
+            'effects' => array(
+                array(
+                    'name' => 'image_scale',
+                    'data' => array('width' => 200, 'height' => 200, 'upscale' => FALSE),
+                    'weight' => 0,
+                ),
+            ),
+        );
+
+        // Save the image style.
+        image_style_save($style);
     }
 }
 

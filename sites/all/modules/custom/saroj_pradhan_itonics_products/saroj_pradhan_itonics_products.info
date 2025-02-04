@@ -2,5 +2,11 @@ name = "Saroj Itonics Products"
 description = "A module to manage the products"
 package = "Custom Module"
 core = "7.x"
-php = "5.2.4"
+php = "7.4"
 version = "7.x-1.0"
+dependencies[]="image"
+
+stylesheets[all][] = css/style.css
+stylesheets[all][] = css/multi-select.css
+scripts[] = js/multi-select.js
+scripts[] = js/multi-select-init.js
