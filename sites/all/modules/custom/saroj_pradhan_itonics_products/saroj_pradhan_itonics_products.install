@@ -40,7 +40,7 @@ function saroj_pradhan_itonics_products_schema()
                 'not null' => TRUE,
             ),
             'type' => array(
-                'description' => 'Single Select',
+                'description' => 'Radio',
                 'type' => 'varchar',
                 'length' => 64,
                 'not null' => TRUE,
@@ -74,6 +74,7 @@ function saroj_pradhan_itonics_products_schema()
  */
 function saroj_pradhan_itonics_products_install()
 {
+    // create table if doesnot exists
     $tables = db_find_tables('%');
     if (!in_array('saroj_pradhan_itonics_products', $tables)) {
         drupal_install_schema('saroj_pradhan_itonics_products');
@@ -81,14 +82,13 @@ function saroj_pradhan_itonics_products_install()
 
 
     // Create a directory for product images if it doesn't exist.
-    $directory = 'public://product_images';
+    $directory = 'public://itonics_products';
     if (!file_exists($directory)) {
         file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
     }
 
+    // custom style for image.
     $style_name = 'product_image';
-
-    // Check if the image style already exists.
     if (!image_style_load($style_name)) {
         $style = array(
             'name' => $style_name,
@@ -112,6 +112,5 @@ function saroj_pradhan_itonics_products_install()
  */
 function saroj_pradhan_itonics_products_uninstall()
 {
-
     drupal_uninstall_schema('saroj_pradhan_itonics_products');
 }
